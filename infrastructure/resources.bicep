@@ -19,10 +19,12 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
-    size: 'Y1'
     capacity: 1
   }
   kind: 'functionapp'
+  properties: {
+    reserved: true
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
@@ -36,10 +38,6 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     enabled: true
     serverFarmId: appServicePlan.id
     httpsOnly: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
-
-    }
   }
 }
 
