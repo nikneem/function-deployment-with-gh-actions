@@ -27,7 +27,7 @@ jobs:
         with:
           useConfigFile: true
 
-  compile-api:
+  compile-solution:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -54,7 +54,7 @@ jobs:
       #     output: both
       #     thresholds: "20 80"
 
-  build-funcs:
+  publish-functions:
     runs-on: ubuntu-latest
     needs: versionize
     steps:
@@ -97,7 +97,7 @@ jobs:
 
   deploy-infrastructure-prod:
     runs-on: ubuntu-latest
-    needs: [publish-bicep, compile-api]
+    needs: [publish-bicep, compile-solution]
     outputs:
       targetResourceGroupName: ${{ steps.armdeployprod.outputs.targetResourceGroupName }}
       functionResourceName: ${{ steps.armdeployprod.outputs.functionResourceName }}
@@ -121,7 +121,7 @@ jobs:
 
   deploy-function-app:
     runs-on: ubuntu-latest
-    needs: [build-funcs, deploy-infrastructure-prod]
+    needs: [publish-functions, deploy-infrastructure-prod]
     steps:
       - uses: actions/download-artifact@v3
         with:

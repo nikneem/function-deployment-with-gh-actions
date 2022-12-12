@@ -36,6 +36,10 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     enabled: true
     serverFarmId: appServicePlan.id
     httpsOnly: true
+    siteConfig: {
+      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+
+    }
   }
 }
 
