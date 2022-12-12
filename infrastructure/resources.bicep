@@ -58,6 +58,10 @@ var config = [
     name: 'WEBSITE_RUN_FROM_PACKAGE'
     value: 'true'
   }
+  {
+    name: 'WEBSITE_WEBDEPLOY_USE_SCM'
+    value: 'true'
+  }
 ]
 
 resource appConfig 'Microsoft.Web/sites/config@2022-03-01' = {

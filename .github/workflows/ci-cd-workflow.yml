@@ -129,12 +129,10 @@ jobs:
       - uses: azure/login@v1
         with:
           creds: ${{secrets.AZURE_PROD}}
-
       - name: Download Azure Function app publishing profile
         id: az_funcapp_publishing_profile
         run: |
           echo "FUNCTION_APP_PUB_PROFILE=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure-prod.outputs.targetResourceGroupName}} --name ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}} --xml)" >> $GITHUB_ENV
-
       - name: Deploy Azure Functions app
         uses: Azure/functions-action@v1
         with:
