@@ -1,0 +1,128 @@
+name: Function App Deployment
+on:
+  push:
+    branches: [main]
+
+env:
+  FUNCTIONS_PATH: "Demo.FunctionsApp"
+  FUNCTIONS_PROJECT: "Demo.FunctionsApp.csproj"
+
+jobs:
+  versionize:
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.gitversion.outputs.MajorMinorPatch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.14
+        with:
+          versionSpec: "5.x"
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.14
+        with:
+          useConfigFile: true
+
+  compile-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+      - name: Restore dependencies
+        run: dotnet restore ./src
+      - name: Build
+        run: dotnet build ./src --no-restore
+      - name: Test
+        run: dotnet test ./src --no-build --nologo --collect:"XPlat Code Coverage" --results-directory ./coverage
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "20 80"
+
+  build-funcs:
+    runs-on: ubuntu-latest
+    needs: versionize
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install zip
+        uses: montudor/action-zip@v1
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
+      - name: Restore packages
+        working-directory: src
+        run: dotnet restore
+      - name: Publish functions app
+        working-directory: src
+        run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}}
+
+      - name: Zip output
+        run: zip -qq -r functions.zip *
+        working-directory: src/functionsout
+
+      - name: Upload functions artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: player-functions
+          path: src/functionsout/functions.zip
+
+  # publish-bicep:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Compile infrastructure
+  #       uses: Azure/cli@v1
+  #       with:
+  #         inlineScript: az bicep build --file ./infrastructure/main.bicep
+  #     - name: Publish Artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: bicep-templates
+  #         path: infrastructure/*.json
+
+  # deploy-function-app:
+  #   runs-on: ubuntu-latest
+  #   needs: build-funcs
+  #   steps:
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         name: player-functions
+  #     - name: Display structure of downloaded files
+  #       run: ls -R
+  #     - uses: azure/login@v1
+  #       with:
+  #         creds: ${{secrets.AZURE_PROD}}
+  #         enable-AzPSSession: true
+
+  #     - name: Download Azure Function app publishing profile
+  #       id: az_funcapp_publishing_profile
+  #       run: |
+  #         echo "FUNCTION_APP_PUB_PROFILE=$(az functionapp deployment list-publishing-profiles --resource-group blckjck-plyr-prod-neu --name blckjck-plyr-prod-neu-func --xml)" >> $GITHUB_ENV
+  #     # - name: Deploy FunctionApp
+  #     #   uses: Azure/functions-action@v1
+  #     #   with:
+  #     #     app-name: blckjck-plyr-prod-neu-func
+  #     #     package: functions.zip
+  #     #     publish-profile: ${{ steps.fncapp.outputs.profile }}
+  #     - name: 🚀 Deploy Azure Functions app
+  #       uses: Azure/functions-action@v1
+  #       with:
+  #         app-name: blckjck-plyr-prod-neu-func
+  #         package: "functions.zip"
+  #         publish-profile: ${{ env.FUNCTION_APP_PUB_PROFILE }}
+  #         respect-funcignore: true
