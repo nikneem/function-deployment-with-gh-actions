@@ -129,9 +129,16 @@ jobs:
       - uses: azure/login@v1
         with:
           creds: ${{secrets.AZURE_PROD}}
-          enable-AzPSSession: true
 
-      - uses: Azure/cli@v1
-        name: Deploy Function App
+      - name: Download Azure Function app publishing profile
+        id: az_funcapp_publishing_profile
+        run: |
+          echo "FUNCTION_APP_PUB_PROFILE=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure-prod.outputs.targetResourceGroupName}} --name ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}} --xml)" >> $GITHUB_ENV
+
+      - name: Deploy Azure Functions app
+        uses: Azure/functions-action@v1
         with:
-          inlineScript: az functionapp deploy -n ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}} -g ${{needs.deploy-infrastructure-prod.outputs.targetResourceGroupName}} --src-path functions.zip --type zip
+          app-name: ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}}
+          package: "functions.zip"
+          publish-profile: ${{ env.FUNCTION_APP_PUB_PROFILE }}
+          respect-funcignore: true
