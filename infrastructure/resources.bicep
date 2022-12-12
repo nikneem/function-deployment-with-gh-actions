@@ -52,6 +52,10 @@ var config = [
     name: 'FUNCTIONS_WORKER_RUNTIME'
     value: 'dotnet-isolated'
   }
+  {
+    name: 'WEBSITE_RUN_FROM_PACKAGE'
+    value: 'true'
+  }
 ]
 
 resource appConfig 'Microsoft.Web/sites/config@2022-03-01' = {
