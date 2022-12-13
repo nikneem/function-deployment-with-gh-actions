@@ -138,5 +138,7 @@ jobs:
         with:
           app-name: ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}}
           package: "functions.zip"
+          appType: "functionAppLinux"
+          runtimeStack: "DOTNET|7.0"
           publish-profile: ${{ env.FUNCTION_APP_PUB_PROFILE }}
           respect-funcignore: true
