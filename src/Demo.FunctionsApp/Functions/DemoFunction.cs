@@ -3,25 +3,24 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Demo.FunctionsApp.Functions
+namespace Demo.FunctionsApp.Functions;
+
+public class DemoFunction
 {
-    public class DemoFunction
+    private readonly ILogger _logger;
+
+    public DemoFunction(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
+        _logger = loggerFactory.CreateLogger<DemoFunction>();
+    }
 
-        public DemoFunction(ILoggerFactory loggerFactory)
-        {
-            _logger = loggerFactory.CreateLogger<DemoFunction>();
-        }
+    [Function("DemoFunction")]
+    public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+        response.WriteString("Demo function works!");
 
-        [Function("DemoFunction")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
-        {
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-            response.WriteString("Demo function works!");
-
-            return response;
-        }
+        return response;
     }
 }
