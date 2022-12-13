@@ -69,7 +69,7 @@ jobs:
         run: dotnet restore
       - name: Publish functions app
         working-directory: src
-        run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}} -r linux-x64 --self-contained false
+        run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}} -r linux-x64
 
       - name: Zip output
         run: zip -qq -r functions.zip *
