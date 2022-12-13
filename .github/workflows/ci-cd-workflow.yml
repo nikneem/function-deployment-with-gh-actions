@@ -138,4 +138,3 @@ jobs:
         with:
           app-name: ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}}
           package: "functions.zip"
-          publish-profile: ${{ env.FUNCTION_APP_PUB_PROFILE }}
