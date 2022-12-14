@@ -71,15 +71,15 @@ jobs:
         working-directory: src
         run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}}
 
-      - name: Zip output
-        run: zip -qq -r functions.zip *
-        working-directory: src/functionsout
+      # - name: Zip output
+      #   run: zip -qq -r functions.zip *
+      #   working-directory: src/functionsout
 
       - name: Upload functions artifact
         uses: actions/upload-artifact@v3
         with:
           name: player-functions
-          path: src/functionsout/functions.zip
+          path: src/functionsout/*
 
   publish-bicep:
     runs-on: ubuntu-latest
@@ -126,6 +126,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: player-functions
+          path: function
       - uses: azure/login@v1
         with:
           creds: ${{secrets.AZURE_PROD}}
@@ -137,4 +138,4 @@ jobs:
         uses: Azure/functions-action@v1
         with:
           app-name: ${{needs.deploy-infrastructure-prod.outputs.functionResourceName}}
-          package: "functions.zip"
+          package: function
