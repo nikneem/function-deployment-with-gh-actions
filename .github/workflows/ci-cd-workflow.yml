@@ -54,25 +54,25 @@ jobs:
       #     output: both
       #     thresholds: "20 80"
 
-publish-functions:
-  runs-on: ubuntu-latest
-  needs: versionize
-  steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: "7.0.x"
-    - name: Restore packages
-      working-directory: src
-      run: dotnet restore
-    - name: Publish functions app
-      working-directory: src
-      run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}}
-    - name: Upload functions artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: player-functions
-        path: src/functionsout/*
+  publish-functions:
+    runs-on: ubuntu-latest
+    needs: versionize
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
+      - name: Restore packages
+        working-directory: src
+        run: dotnet restore
+      - name: Publish functions app
+        working-directory: src
+        run: dotnet publish $FUNCTIONS_PATH/$FUNCTIONS_PROJECT -c Release --no-restore -o functionsout /p:Version=${{needs.versionize.outputs.semver}}
+      - name: Upload functions artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: player-functions
+          path: src/functionsout/*
 
   publish-bicep:
     runs-on: ubuntu-latest
